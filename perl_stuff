@@ -1,3 +1,5 @@
+##uninitialized value in join or string
+
 use Pshark::Util;
 my $info = {
         Legal1 => 'aaa',
