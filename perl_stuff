@@ -1,0 +1,47 @@
+use Pshark::Util;
+my $info = {
+        Legal1 => 'aaa',
+        Legal3 => 'bb'
+};
+$info->{'Legal_description'} = recapitalize(join " ", grep { $_ } @$info{"Legal1", "Legal2", "Legal3"});
+print $info->{'Legal_description'};
+-------------------------------------
+
+use Pshark::Util;
+my $info = {
+        Legal1 => 'aaa',
+        Legal3 => 'bb',
+        Legal2 => 'cc'
+};
+$info->{'Legal_description'} = recapitalize(join " ", grep { $_ } @$info{"Legal1", "Legal2", "Legal3"});
+print $info->{'Legal_description'};;
+my $info = {};
+$info->{'Legal_description'} = recapitalize(join " ", grep { $_ } @$info{"Legal1", "Legal2", "Legal3"});
+print $info->{'Legal_description'};
+-------------------------------------
+use Pshark::Util;
+my $info = {
+        Legal1 => 'aaa',
+        Legal3 => 'bb',
+        Legal2 => 'cc'
+};
+$info->{'Legal_description'} = recapitalize(join " ", grep { $_ } @$info{"Legal1", "Legal2", "Legal3"});
+print $info->{'Legal_description'};
+--------------------------------
+ use Pshark::Util;
+my $info = {};
+$info->{'Legal_description'} = recapitalize(join " ", grep { $_ } @$info{"Legal1", "Legal2", "Legal3"});
+print $info->{'Legal_description'};
+
+----------------------------
+use Pshark::Util;
+my $info = {
+        Legal1 => 'aaa',
+        Legal3 => 'bb'
+};
+foreach my $col qw(Legal1 Legal2 Legal3) {
+        if($info->{$col}) {
+                $info->{'Legal_description'} .= recapitalize($info->{$col});
+        }
+}
+print $info->{'Legal_description'};
