@@ -1,0 +1,173 @@
+<%attr>
+  cache_keys => []
+	required_queries => [ "ak.anchorage_residential_accessor", "ak.anchorage_residential", "ak.anchorage_commercial_yard", "ak.anchorage_commercial" ]
+	title => "Other Building and Yard Improvements"
+	lazy_load => 1
+	optional_queries => []
+	temporarily_do_not_cache => 0
+</%attr>
+
+<%args>
+	$q
+	$propid
+</%args>
+
+<%init>
+	my $no_bldg = $q->row_count("ak.anchorage_residential");
+	my $no_comm = $q->row_count("ak.anchorage_commercial");
+	
+	my $no_acc = $q->row_count("ak.anchorage_residential_accessor");	
+	my $com_oby = $q->row_count("ak.anchorage_commercial_yard");
+
+		
+	my @header = qw (acc_type acc_year_built acc_area acc_grade acc_cond);
+	my @details = qw (acc_type_sub acc_quant acc_pct_good acc_mod_code);	
+	
+	my @yard = qw (yard_struct_code yard_year_built yard_area yard_same_units);
+	my @yard_details = qw (yard_cond yard_func_util);
+	
+	my $length_header = $#header + 1;		
+	my $length_yard = $#yard + 1;		
+</%init>
+
+%	if ($q->row_count("ak.anchorage_residential_accessor", "propkey")) {
+%		if ($no_acc > 1 ) {
+%		unshift (@header, 'card_no_1') if ($no_bldg > 1);
+		<& SELF:table, "ak.anchorage_residential_accessor",
+			@header,		
+			"EXPAND:$length_header", 
+			"EXPAND_SECTION:Details",
+				@details,			
+		&>	
+%		} else {
+			<& SELF:table_begin &>
+				<& SELF:title, "General" &>
+				<& SELF:acc, "ak.anchorage_residential_accessor",
+					@header,			
+				&>		
+				
+			<& SELF:column2_begin &>
+			
+				<& SELF:title, "Details" &>
+				<& SELF:acc, "ak.anchorage_residential_accessor",
+					@details,				
+				&>	
+			
+		<&SELF:table_end &>
+%	}
+% }
+
+%	if ($q->row_count("ak.anchorage_commercial_yard", "propkey")) {
+%		unshift (@yard, 'card_no_1') if ($com_oby > 1 && $no_comm > 1) ;
+%		if ($q->row_count("ak.anchorage_residential_accessor", "propkey") && $q->row_count("ak.anchorage_commercial_yard", "propkey")) {
+			<& SELF:title, "Commercial imprv." &> 
+%		}
+		<& SELF:table, "ak.anchorage_commercial_yard",
+			@yard,		
+			"EXPAND:$length_yard", 
+			"EXPAND_SECTION:Details",
+				@yard_details,			
+		&>	
+%	}	
+
+-----------------------------------------------------------------
+
+<%attr>
+  cache_keys => []
+	required_queries => [ "ak.anchorage_commercial", "ak.anchorage_commercial_intr", "ak.anchorage_commercial_otherfeat" ]
+	title => "Commercial Building"
+	lazy_load => 1
+	temporarily_do_not_cache => 0
+</%attr>
+
+<%args>
+	$propid
+	$q
+</%args>
+
+<%init>
+	my $no_bldg = $q->row_count("ak.anchorage_commercial");
+	my $no_instr = $q->row_count("ak.anchorage_commercial_intr");
+	my $no_other = $q->row_count("ak.anchorage_commercial_otherfeat");
+	
+	my @header = qw (bldg_year_built bldg_struct_type tot_bldg_sqft_formatted bldg_grade_letter);
+	my @other = qw (bldg_units gross_impr_desc bldg_name bldg_grade_sign);
+	
+	my @int_headers = qw (floor_level floor_area floor_use_code floor_perim floor_wall_height);	
+	my @details = qw (floor_constr_type floor_ext_wall ext_b_heat air_cond plumbing);
+	my @other_det = qw (intr_physical_cond func_util);	
+	
+	my @other_features = qw (of_struct_code of_meas1 of_meas2 of_same_units);
+	
+	my $length_header = $#header + 1;
+	my $length_int = $#int_headers + 1;	
+</%init>
+	
+% 	if ($no_bldg > 1) {
+%	unshift (@header, 'card_no_1');
+%	unshift (@int_headers, 'card_no_1');
+%	unshift (@other_features, 'card_no_1');
+		<& SELF:table, "ak.anchorage_commercial",
+			@header,
+			"EXPAND:$length_header",
+			"EXPAND_SECTION: Other Details",
+				@other,
+		&>
+%	} else {
+		<& SELF:table_begin &>
+			<& SELF:title, "General" &>
+			<& SELF:acc, "ak.anchorage_commercial",
+				@header,		
+			&>	
+			
+			<& SELF:column2_begin &>   
+%		if ($q->get("ak.anchorage_residential_addn", "bldg_name") || $q->get("ak.anchorage_residential_addn", "gross_impr_desc") || $q->get("ak.anchorage_residential_addn", "bldg_units")) {			
+			<& SELF:title, "Details" &>
+			<& SELF:acc, "ak.anchorage_commercial",		
+				@other,
+			&>	
+%		}			
+		<& SELF:table_end &>
+%	}
+
+
+<!--Interior features  -->
+%	if ($no_instr > 1) {
+%		if ($q->get("ak.anchorage_commercial_intr", "floor_area")) {
+		<& SELF:title, "Interior Features" &> 
+		<& SELF:table, "ak.anchorage_commercial_intr",
+			@int_headers,
+			"EXPAND:$length_int",
+			"EXPAND_SECTION: Other Details",
+				@details,
+				@other_det,
+		&>				
+%		}
+%	} else {
+%	if ($q->get("ak.anchorage_commercial_intr", "floor_area"))  {
+		<& SELF:table_begin &>
+			<& SELF:title, "Interior Features" &>
+			<& SELF:acc, "ak.anchorage_commercial_intr",
+				@int_headers,							
+			&>		
+%		}
+			<& SELF:column2_begin &>	
+%		if ($q->get("ak.anchorage_commercial_intr", "floor_constr_type") || $q->get("ak.anchorage_commercial_intr", "floor_ext_wall") || $q->get("ak.anchorage_commercial_intr", "air_cond")) {						
+			<& SELF:title, "Other Interior Details" &>
+			<& SELF:acc, "ak.anchorage_commercial_intr",
+				@details,	
+				@other_det,				
+			&>	
+%		}			
+		<&SELF:table_end &>
+%	}		
+		
+<!--Additions/Other Building Features  -->
+
+%		if ($q->get("ak.anchorage_commercial_otherfeat", "of_struct_code")) {
+		<& SELF:title, "Other Building Features" &> 
+		<& SELF:table, "ak.anchorage_commercial_otherfeat",
+			@other_features,				
+		&>				
+%		}
+	
